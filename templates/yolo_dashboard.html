@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO + DeepSORT People Tracking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .yolo-accent { color: #00ff41; }
+        .tracking-box { border: 2px solid #00ff41; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="min-h-screen gradient-bg">
+        <!-- Header -->
+        <header class="bg-black bg-opacity-50 p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-3xl font-bold yolo-accent">🎯 YOLO + DeepSORT Tracker</h1>
+                <div class="flex space-x-4">
+                    <button id="startBtn" onclick="startTracking()" 
+                            class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold transition">
+                        ▶ Start Tracking
+                    </button>
+                    <button id="stopBtn" onclick="stopTracking()" 
+                            class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold transition">
+                        ⏹ Stop Tracking
+                    </button>
+                    <button onclick="resetSession()" 
+                            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container mx-auto p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Video Feed -->
+                <div class="lg:col-span-2">
+                    <div class="bg-black bg-opacity-60 rounded-xl p-6 tracking-box">
+                        <h2 class="text-2xl font-bold mb-4 yolo-accent">🔴 Live Feed</h2>
+                        <div class="relative">
+                            <img id="videoFeed" src="/video_feed" 
+                                 class="w-full h-auto rounded-lg border-2 border-green-500" 
+                                 alt="Live Video Feed">
+                            <div class="absolute top-4 left-4 bg-black bg-opacity-75 px-3 py-1 rounded">
+                                <span class="yolo-accent font-mono text-sm">YOLO + DeepSORT ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div class="space-y-6">
+                    <!-- Real-time Stats -->
+                    <div class="bg-black bg-opacity-60 rounded-xl p-6">
+                        <h3 class="text-xl font-bold mb-4 yolo-accent">📊 Live Statistics</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Current People:</span>
+                                <span id="currentCount" class="text-2xl font-bold yolo-accent">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Total Detected:</span>
+                                <span id="totalCount" class="text-2xl font-bold text-yellow-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Status:</span>
+                                <span id="trackingStatus" class="font-semibold text-red-400">Stopped</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Method:</span>
+                                <span class="font-semibold yolo-accent">YOLO + DeepSORT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Info -->
+                    <div class="bg-black bg-opacity-60 rounded-xl p-6">
+                        <h3 class="text-xl font-bold mb-4 yolo-accent">⚙️ System Info</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Detection:</span>
+                                <span class="yolo-accent">YOLOv8</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Tracking:</span>
+                                <span class="yolo-accent">DeepSORT</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Confidence:</span>
+                                <span id="confidence" class="yolo-accent">0.6</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Session ID:</span>
+                                <span id="sessionId" class="text-xs text-gray-400">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance -->
+                    <div class="bg-black bg-opacity-60 rounded-xl p-6">
+                        <h3 class="text-xl font-bold mb-4 yolo-accent">🚀 Performance</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Accuracy:</span>
+                                <span class="text-green-400">High</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">False Positives:</span>
+                                <span class="text-green-400">Low</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Tracking Quality:</span>
+                                <span class="text-green-400">Excellent</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update stats every 2 seconds
+        setInterval(updateStats, 2000);
+        
+        function updateStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentCount').textContent = data.current_people || 0;
+                    document.getElementById('totalCount').textContent = data.total_people || 0;
+                    document.getElementById('trackingStatus').textContent = data.is_tracking ? 'Active' : 'Stopped';
+                    document.getElementById('trackingStatus').className = data.is_tracking ? 
+                        'font-semibold text-green-400' : 'font-semibold text-red-400';
+                    document.getElementById('confidence').textContent = data.confidence_threshold || '0.6';
+                    document.getElementById('sessionId').textContent = data.session_id ? 
+                        data.session_id.substring(0, 8) + '...' : '-';
+                });
+        }
+        
+        function startTracking() {
+            fetch('/api/start-tracking', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Tracking started:', data);
+                });
+        }
+        
+        function stopTracking() {
+            fetch('/api/stop-tracking', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Tracking stopped:', data);
+                });
+        }
+        
+        function resetSession() {
+            fetch('/api/reset-session', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Session reset:', data);
+                });
+        }
+        
+        // Initial stats load
+        updateStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Video Stream Section -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-camera mr-2"></i>Live Video Stream
+                </h2>
+                <button id="refresh-stats" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-sync-alt mr-1"></i>Refresh
+                </button>
+            </div>
+            
+            <div class="video-container bg-gray-900 rounded-lg overflow-hidden">
+                <img src="{{ url_for('video_feed') }}" 
+                     alt="Video Stream" 
+                     class="w-full h-auto"
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQ4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5WaWRlbyBTdHJlYW0gVW5hdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+            </div>
+            
+            <div class="mt-4 flex justify-center space-x-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="current-count">0</div>
+                    <div class="text-sm text-gray-600">Current People</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="total-count">0</div>
+                    <div class="text-sm text-gray-600">Total Detected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Panel -->
+    <div class="space-y-6">
+        <!-- Real-time Stats -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar mr-2"></i>Real-time Statistics
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="stats-card p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold text-blue-600" id="current-count-sidebar">0</div>
+                            <div class="text-sm text-gray-600">People Present</div>
+                        </div>
+                        <i class="fas fa-users text-blue-500 text-2xl"></i>
+                    </div>
+                </div>
+                
+                <div class="stats-card p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold text-green-600" id="total-count-sidebar">0</div>
+                            <div class="text-sm text-gray-600">Total Tracked</div>
+                        </div>
+                        <i class="fas fa-user-check text-green-500 text-2xl"></i>
+                    </div>
+                </div>
+                
+                <div class="stats-card p-4 bg-purple-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-lg font-bold text-purple-600" id="session-duration">0s</div>
+                            <div class="text-sm text-gray-600">Session Duration</div>
+                        </div>
+                        <i class="fas fa-clock text-purple-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Info -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                <i class="fas fa-info-circle mr-2"></i>Session Information
+            </h3>
+            
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="font-semibold" id="session-status">Inactive</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Session ID:</span>
+                    <span class="font-mono text-sm" id="session-id">{{ session_id or 'Not started' }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Start Time:</span>
+                    <span class="text-sm" id="start-time">{{ start_time or 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                <i class="fas fa-cog mr-2"></i>Controls
+            </h3>
+            
+            <div class="space-y-3">
+                <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-download mr-2"></i>Export Data
+                </button>
+                <button class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-history mr-2"></i>View History
+                </button>
+                <button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-user-plus mr-2"></i>Add Known Person
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-4">
+        <i class="fas fa-question-circle mr-2"></i>How to Use
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-4">
+            <i class="fas fa-play-circle text-green-500 text-3xl mb-2"></i>
+            <h4 class="font-semibold mb-2">Start Tracking</h4>
+            <p class="text-sm text-gray-600">Click the Start button to begin real-time people detection and tracking.</p>
+        </div>
+        <div class="text-center p-4">
+            <i class="fas fa-eye text-blue-500 text-3xl mb-2"></i>
+            <h4 class="font-semibold mb-2">Monitor Live</h4>
+            <p class="text-sm text-gray-600">Watch the live video feed with real-time bounding boxes and person IDs.</p>
+        </div>
+        <div class="text-center p-4">
+            <i class="fas fa-chart-line text-purple-500 text-3xl mb-2"></i>
+            <h4 class="font-semibold mb-2">View Analytics</h4>
+            <p class="text-sm text-gray-600">Monitor statistics and export tracking data for analysis.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Sync sidebar stats with main stats
+function syncStats() {
+    const currentCount = document.getElementById('current-count').textContent;
+    const totalCount = document.getElementById('total-count').textContent;
+    
+    document.getElementById('current-count-sidebar').textContent = currentCount;
+    document.getElementById('total-count-sidebar').textContent = totalCount;
+}
+
+// Update stats every 2 seconds
+setInterval(syncStats, 2000);
+</script>
+{% endblock %}

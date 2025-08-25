@@ -1,0 +1,42 @@
+# Virtual Environment Setup
+.venv/
+.venv\*
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database
+*.db
+*.sqlite3
+people_tracking.db
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Model files (YOLO)
+*.pt
+*.weights
+yolo*.pt
+
+# Test files
+test.db
